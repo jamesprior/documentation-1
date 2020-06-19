@@ -1,5 +1,5 @@
 ---
-title: Profiling
+title: Continuous Profiling
 kind: Documentation
 further_reading:
     - link: 'https://www.datadoghq.com/blog/introducing-datadog-profiling/'
@@ -14,7 +14,17 @@ further_reading:
 Datadog Profiling is in beta. Reach out to <a href="/help/">Datadog Support</a> if you encounter any issues or have feedback to share.
 </div>
 
+{{< img src="tracing/profiling/profiling_flamegraph.gif" alt="Exploring profiling flame graph">}}
+
+Find CPU, memory, and IO bottlenecks, broken down by method name, class name, and line number, to significantly reduce end-user latency and infrastructure costs.
+
+[Configure profiling][1] in your service to visualize all your stack traces in one place and get actionable insights for performance improvements.
+
+[1]: /tracing/profiling/setup
+
+
 ## Setup
+
 
 Profiling libraries are shipped within the following tracing language libraries. Select your language below to learn how to enable profiling for your application:
 
@@ -59,12 +69,13 @@ The Datadog Profiler requires [Java Flight Recorder][1]. The Datadog Profiling l
 | Environment variable                             | Type          | Description                                                                                      |
 | ------------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------ |
 | `DD_PROFILING_ENABLED`                           | Boolean       | Alternate for `-Ddd.profiling.enabled` argument. Set to `true` to enable profiling.               |
-| `DD_API_KEY`                                     | String        | Alternate for `-Ddd.profiling.api-key-file` argument. The [Datadog API key][4] to use when uploading profiles. |
+| `DD_API_KEY`                                     | String        | Alternate for `-Ddd.profiling.api-key-file` argument (versions 0.48+). The [Datadog API key][4] to use when uploading profiles. |
+| `DD_PROFILING_APIKEY`                            | String        | Deprecated in version 0.48 in favor of `DD_API_KEY`. Alternate for `-Ddd.profiling.api-key-file` argument. |
 | `DD_PROFILING_API_KEY_FILE`                      | String        | Replacement for `-Ddd.profiling.api-key-file` argument. File that should contain the [Datadog API key][4].  |
 | `DD_SITE`                                        | String        | Destination site for your profiles (versions 0.48+). Valid options are `datadoghq.com` for Datadog US site (default), and `datadoghq.eu` for the Datadog EU site. |
 | `DD_SERVICE`                                     | String        | The Datadog [service][5] name.     |
 | `DD_ENV`                                         | String        | The Datadog [environment][6] name, for example `production`.|
-| `DD_VERSION`                                     | String        | The version of your application.                             |
+| `DD_VERSI0ON`                                     | String        | The version of your application.                             |
 | `DD_TAGS`                                        | String        | Tags to apply to an uploaded profile. Must be a list of `<key>:<value>` separated by commas such as: `layer:api, team:intake`.  |
 
 
@@ -120,8 +131,8 @@ The Datadog Profiler requires Python 2.7+. Memory profiling only works on Python
 
 | Environment variable                             | Type          | Description                                                                                      |
 | ------------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------ |
-| `DD_API_KEY`                                     | String        | The [Datadog API key][1] to use when uploading profiles.                                        |
-| `DD_PROFILING_API_KEY`                           | String        | The [Datadog API key][1] to use when uploading profiles. Changed in 0.37: deprecated in favor of `DD_API_KEY`. |
+| `DD_API_KEY`                                     | String        | The [Datadog API key][1] to use when uploading profiles. New in version 0.37.                  |
+| `DD_PROFILING_API_KEY`                           | String        | Deprecated in version 0.37 in favor of `DD_API_KEY`. The [Datadog API key][1] to use when uploading profiles. |
 | `DD_SITE`                                        | String        | If your organization is on Datadog EU site, set this to `datadoghq.eu`.                          |
 | `DD_SERVICE`                                     | String        | The Datadog [service][3] name.     |
 | `DD_ENV`                                         | String        | The Datadog [environment][4] name, for example `production`, which can be set here, or in `DD_PROFILING_TAGS` with `DD_PROFILING_TAGS="env:production"`. |
@@ -175,7 +186,8 @@ The Datadog Profiler requires Go 1.12+. To begin profiling applications:
         profiler.WithAPIKey("<DATADOG_API_KEY>")
         profiler.WithService("<SERVICE_NAME>"),
         profiler.WithEnv("<ENVIRONMENT>"),
-        profiler.WithTags("version:<APPLICATION_VERSION>"),
+        profiler.WithVersion("<YOUR_APP_VERSION>"),
+        profiler.WithTags("<KEY1>:<VALUE1>,<KEY2>:<VALUE2>"),
     )
     if err != nil {
         log.Fatal(err)
@@ -193,16 +205,15 @@ Profiler configuration:
 |  WithService     | String        | The Datadog [service][4] name, for example `my-web-app`, which can be set here, or in `DD_SERVICE`.             |
 |  WithEnv         | String        | The Datadog [environment][5] name, for example `production`, which can be set here, or in `DD_ENV`.         |
 |  WithTags        | String        | The tags to apply to an uploaded profile. Must be a list of in the format `<KEY1>:<VALUE1>,<KEY2>:<VALUE2>`. You can also set this in `DD_TAGS`. |
-|  WithSite        | String        | If your organization is on Datadog EU site, set this to `datadoghq.eu`. You can also set this in `DD_SITE`. |
+|  WithVersion     | String        | The version of your application. |
+|  WithSite        | String        | If your organization is on Datadog EU site, set this to `datadoghq.eu`. You can also set this in `DD_SITE`. Supported from version 1.25.0+. |
 
 
-- For advanced setup of the profiler or to add tags like `service` or `version`, use environment variables to set the parameters:
+- Alternatively, you can also use environment variables to set the parameters:
 
 | Environment variable                             | Type          | Description                                                                                      |
 | ------------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------ |
-| `DD_PROFILING_ENABLED`                           | Boolean       | Alternate for `-Ddd.profiling.enabled` argument. Set to `true` to enable profiling.               |
 | `DD_API_KEY`                                     | String        | Alternate for `-Ddd.profiling.api-key-file` argument. The [Datadog API key][2] to use when uploading profiles. |
-| `DD_PROFILING_API_KEY_FILE`                      | String        | Replacement for `-Ddd.profiling.api-key-file` argument. File that should contain the [Datadog API key][2].  |
 | `DD_SITE`                                        | String        | If your organization is on Datadog EU site, set this to `datadoghq.eu`.                          |
 | `DD_SERVICE`                                     | String        | The Datadog [service][4] name.     |
 | `DD_ENV`                                         | String        | The Datadog [environment][5] name, for example `production`.|
